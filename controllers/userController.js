@@ -1,4 +1,5 @@
 const User = require("../models/usersModel");
+const bcrypt = require("bcrypt");
 
 const createUser = async (req, res) => {
   const { email, password } = req.body;
@@ -18,23 +19,16 @@ const createUser = async (req, res) => {
       return res.status(422).send({ error: "Email is already in use..." });
     }
 
-    try {
-      const user = await User.create({
-        email: email,
-        password: password,
-      });
+    const user = new User({
+      email: email,
+      password: password,
+    });
 
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-
-    // user.save(function (err) {
-    //   if (err) {
-    //     return next(err);
-    //   }
-    //   res.json({ token: tokenForUser(user) });
-    // });
+    // generate salt to hash password
+    const salt = await bcrypt.genSalt(10);
+    // now we set user password to hashed password
+    user.password = await bcrypt.hash(user.password, salt);
+    user.save().then((doc) => res.status(201).send(doc));
   });
 };
 
