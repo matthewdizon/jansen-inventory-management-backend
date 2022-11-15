@@ -2,8 +2,11 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const getUsers = require("./routes/users");
 
 const app = express();
+
+app.use(express.json());
 
 app.get("/", (_req, res) => res.status(200).send("OK"));
 
@@ -17,3 +20,5 @@ mongoose
   .catch((error) => {
     console.log(error);
   });
+
+app.use("/api/users", getUsers);
