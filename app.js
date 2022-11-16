@@ -2,7 +2,9 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+
 const getUsers = require("./routes/users");
+const getParts = require("./routes/parts");
 
 const app = express();
 
@@ -22,3 +24,4 @@ mongoose
   });
 
 app.use("/api/users", getUsers);
+app.use("/api/parts", getParts);
