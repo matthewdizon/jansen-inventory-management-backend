@@ -36,11 +36,16 @@ const createUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
+  const payload = {
+    user: user.email, // The user's email
+  };
   if (user) {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (validPassword) {
-      const accessToken = jwt.sign(user.email, process.env.ACCESS_TOKEN_SECRET);
+      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "3d",
+      });
       res.json({ accessToken: accessToken });
     } else {
       res.status(400).json({ error: "Invalid Password" });

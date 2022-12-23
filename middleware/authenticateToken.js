@@ -6,11 +6,22 @@ const authenticateToken = (req, res, next) => {
 
   if (token == null) return res.sendStatus(401);
 
-  const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-  req.userData = decoded;
-
-  next();
+  try {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    req.userData = decoded;
+    next();
+  } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      console.error("Invalid JWT"); // The JWT is invalid
+      return res.sendStatus(401);
+    } else if (error instanceof jwt.TokenExpiredError) {
+      console.error("JWT has expired"); // The JWT has expired
+      return res.sendStatus(401);
+    } else {
+      console.error(error); // An unknown error occurred
+      return res.sendStatus(401);
+    }
+  }
 };
 
 module.exports = authenticateToken;
