@@ -7,7 +7,7 @@ const getParts = async (req, res) => {
 };
 
 const createPart = async (req, res) => {
-  const { name } = req.body;
+  const { name, quantity, supplier, price } = req.body;
 
   if (!name) {
     return res.status(422).send({ error: "Name must be provided" });
@@ -16,6 +16,9 @@ const createPart = async (req, res) => {
   try {
     const part = await Part.create({
       name,
+      quantity,
+      supplier,
+      price,
     });
     res.status(200).json(part);
   } catch (error) {
