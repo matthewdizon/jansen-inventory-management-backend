@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const getUsers = require("./routes/users");
 const getParts = require("./routes/parts");
@@ -10,6 +11,8 @@ const getSuppliers = require("./routes/suppliers");
 const app = express();
 
 app.use(express.json());
+
+app.use(cors());
 
 app.get("/", (_req, res) => res.status(200).send("OK"));
 
