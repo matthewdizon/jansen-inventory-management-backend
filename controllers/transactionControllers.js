@@ -17,25 +17,51 @@ const getBuyingTransactions = async (req, res) => {
   res.status(200).json(buyingTransactions);
 };
 
-// const createSellingTransaction = async (req, res) => {
-//   // subtract quantity of selected part
-//   const { customer, date, items, collectionDate, initialPayment, total } = req.body
-//   const paymentAmount = initialPayment.amount
-//   const charge = total - initialPayment
+const createSellingTransaction = async (req, res) => {
+  // subtract quantity of selected part
+  const { customer, date, items, initialPayment, collectionDate } = req.body;
 
-//   try {
-//     const sellingTransaction = await SellingTransaction.create({
-//       name,
-//       quantity,
-//       supplier,
-//       price,
-//     });
-//     res.status(200).json(part);
-//   } catch (error) {
-//     console.log(error.message);
-//     res.status(400).json({ error: error.message });
-//   }
-// };
+  let payments = [];
+
+  if (initialPayment) payments.push(initialPayment);
+
+  try {
+    let total = 0;
+
+    async function calculateTotal() {
+      for await (const item of items.map(async (item) => {
+        const part = await Part.findById(item.part);
+
+        await Part.findOneAndUpdate(
+          { _id: part._id },
+          {
+            $inc: { quantity: -item.quantity },
+          }
+        );
+
+        return item.quantity * part.price;
+      })) {
+        total += item;
+      }
+    }
+
+    await calculateTotal();
+
+    const sellingTransaction = await SellingTransaction.create({
+      customer,
+      date,
+      items,
+      payments,
+      collectionDate,
+      total,
+    });
+
+    res.status(200).json(sellingTransaction);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
 
 const createBuyingTransaction = async (req, res) => {
   // add quantity of selected part
@@ -77,30 +103,9 @@ const createBuyingTransaction = async (req, res) => {
   }
 };
 
-const createPart = async (req, res) => {
-  const { name, quantity, supplier, price } = req.body;
-
-  if (!name) {
-    return res.status(422).send({ error: "Name must be provided" });
-  }
-
-  try {
-    const part = await Part.create({
-      name,
-      quantity,
-      supplier,
-      price,
-    });
-    res.status(200).json(part);
-  } catch (error) {
-    console.log(error.message);
-    res.status(400).json({ error: error.message });
-  }
-};
-
 module.exports = {
   getSellingTransactions,
   getBuyingTransactions,
   createBuyingTransaction,
-  // createSellingTransaction,
+  createSellingTransaction,
 };
