@@ -37,7 +37,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
   const payload = {
-    user: user.email, // The user's email
+    user: user?.email, // The user's email
   };
   if (user) {
     const validPassword = await bcrypt.compare(password, user.password);
@@ -55,7 +55,29 @@ const loginUser = async (req, res) => {
   }
 };
 
+const identifyUser = async (req, res) => {
+  // Get the access token from the request header
+  const authHeader = req.headers["authorization"];
+  const token = authHeader?.split(" ")[1];
+
+  // Verify the access token using the secret that was used to sign it
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      // If the token is invalid or has been tampered with, return an error
+      res.status(401).send({ error: "Invalid token" });
+      return;
+    }
+
+    // Extract the user's email address from the decoded payload
+    const email = decoded.user;
+
+    // Send the email address to the frontend
+    res.send({ email: email });
+  });
+};
+
 module.exports = {
   createUser,
   loginUser,
+  identifyUser,
 };
