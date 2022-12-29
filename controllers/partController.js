@@ -1,7 +1,17 @@
 const Part = require("../models/partsModel");
 
 const getParts = async (req, res) => {
-  const parts = await Part.find({});
+  const pipeline = [
+    {
+      $lookup: {
+        from: "suppliers",
+        localField: "supplier",
+        foreignField: "_id",
+        as: "supplier",
+      },
+    },
+  ];
+  const parts = await Part.aggregate(pipeline).exec();
 
   res.status(200).json(parts);
 };
