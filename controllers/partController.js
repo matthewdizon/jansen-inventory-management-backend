@@ -1,23 +1,13 @@
 const Part = require("../models/partsModel");
 
 const getParts = async (req, res) => {
-  const pipeline = [
-    {
-      $lookup: {
-        from: "suppliers",
-        localField: "supplier",
-        foreignField: "_id",
-        as: "supplier",
-      },
-    },
-  ];
-  const parts = await Part.aggregate(pipeline).exec();
+  const parts = await Part.find({});
 
   res.status(200).json(parts);
 };
 
 const createPart = async (req, res) => {
-  const { name, quantity, supplier, price } = req.body;
+  const { name, quantity, supplier } = req.body;
 
   if (!name) {
     return res.status(422).send({ error: "Name must be provided" });
@@ -28,7 +18,6 @@ const createPart = async (req, res) => {
       name,
       quantity,
       supplier,
-      price,
     });
     res.status(200).json(part);
   } catch (error) {
@@ -37,7 +26,16 @@ const createPart = async (req, res) => {
   }
 };
 
+const deletePart = async (req, res) => {
+  const { id } = req.params;
+
+  const part = await Part.findOneAndDelete({ _id: id });
+
+  res.status(200).json(part);
+};
+
 module.exports = {
   getParts,
   createPart,
+  deletePart,
 };

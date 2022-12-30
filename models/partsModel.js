@@ -6,11 +6,9 @@ const partSchema = new Schema({
   name: { type: String, required: true },
   quantity: { type: Number, required: false },
   supplier: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Supplier",
+    type: String,
     required: false,
   },
-  price: { type: Number, required: false },
 });
 
 const Part = mongoose.model("part", partSchema);
