@@ -6,6 +6,18 @@ const getParts = async (req, res) => {
   res.status(200).json(parts);
 };
 
+const getPart = async (req, res) => {
+  const { id } = req.params;
+
+  const part = await Part.findById(id);
+
+  if (!part) {
+    return res.status(404).json({ error: "No such part" });
+  }
+
+  res.status(200).json(part);
+};
+
 const createPart = async (req, res) => {
   const { name, quantity, supplier } = req.body;
 
@@ -36,6 +48,7 @@ const deletePart = async (req, res) => {
 
 module.exports = {
   getParts,
+  getPart,
   createPart,
   deletePart,
 };
