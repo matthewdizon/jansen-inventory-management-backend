@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-// const getUsers = require("./routes/users");
+const getUsers = require("./routes/users");
 const getParts = require("./routes/parts");
 const getSuppliers = require("./routes/suppliers");
 const getTransactions = require("./routes/transactions");
@@ -28,7 +28,7 @@ mongoose
     console.log(error);
   });
 
-// app.use("/api/users", getUsers);
+app.use("/api/users", getUsers);
 app.use("/api/parts", getParts);
 app.use("/api/suppliers", getSuppliers);
 app.use("/api/transactions", getTransactions);
