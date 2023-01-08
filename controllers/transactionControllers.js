@@ -172,9 +172,57 @@ const createBuyingTransaction = async (req, res) => {
   }
 };
 
+const getSellingTransaction = async (req, res) => {
+  const { id } = req.params;
+
+  const sellingTransaction = await SellingTransaction.findById(id);
+
+  if (!sellingTransaction) {
+    return res.status(404).json({ error: "No such selling transaction" });
+  }
+
+  res.status(200).json(sellingTransaction);
+};
+
+const getBuyingTransaction = async (req, res) => {
+  const { id } = req.params;
+
+  const buyingTransaction = await BuyingTransaction.findById(id);
+
+  if (!buyingTransaction) {
+    return res.status(404).json({ error: "No such buying transaction" });
+  }
+
+  res.status(200).json(buyingTransaction);
+};
+
+const deleteSellingTransaction = async (req, res) => {
+  const { id } = req.params;
+
+  const sellingTransaction = await SellingTransaction.findOneAndDelete({
+    _id: id,
+  });
+
+  res.status(200).json(sellingTransaction);
+};
+
+const deleteBuyingTransaction = async (req, res) => {
+  const { id } = req.params;
+
+  const buyingTransaction = await BuyingTransaction.findOneAndDelete({
+    _id: id,
+  });
+
+  res.status(200).json(buyingTransaction);
+};
+
 module.exports = {
   getSellingTransactions,
   getBuyingTransactions,
   createBuyingTransaction,
   createSellingTransaction,
+  getSellingTransaction,
+  getBuyingTransaction,
+  deleteSellingTransaction,
+  deleteBuyingTransaction,
 };
