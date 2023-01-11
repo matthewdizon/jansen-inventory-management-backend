@@ -1,3 +1,5 @@
+var mongoose = require("mongoose");
+
 const {
   BuyingTransaction,
   SellingTransaction,
@@ -6,81 +8,13 @@ const {
 const Part = require("../models/partsModel");
 
 const getSellingTransactions = async (req, res) => {
-  // const sellingTransactions = await SellingTransaction.find({});
-  const pipeline = [
-    {
-      $unwind: "$items",
-    },
-    {
-      $lookup: {
-        from: "parts",
-        localField: "items.part",
-        foreignField: "_id",
-        as: "part",
-      },
-    },
-    {
-      $unwind: "$part",
-    },
-    {
-      $group: {
-        _id: "$_id",
-        customer: { $first: "$customer" },
-        date: { $first: "$date" },
-        items: {
-          $push: {
-            part: "$part",
-            quantity: "$items.quantity",
-            price: "$items.price",
-          },
-        },
-        collectionDate: { $first: "$collectionDate" },
-        payments: { $first: "$payments" },
-        total: { $first: "$total" },
-      },
-    },
-  ];
-  const sellingTransactions = await SellingTransaction.aggregate(
-    pipeline
-  ).exec();
+  const sellingTransactions = await SellingTransaction.find({});
 
   res.status(200).json(sellingTransactions);
 };
 
 const getBuyingTransactions = async (req, res) => {
-  // const buyingTransactions = await BuyingTransaction.find({});
-  const pipeline = [
-    {
-      $unwind: "$items",
-    },
-    {
-      $lookup: {
-        from: "parts",
-        localField: "items.part",
-        foreignField: "_id",
-        as: "part",
-      },
-    },
-    {
-      $unwind: "$part",
-    },
-    {
-      $group: {
-        _id: "$_id",
-        date: { $first: "$date" },
-        items: {
-          $push: {
-            part: "$part",
-            quantity: "$items.quantity",
-            price: "$items.price",
-          },
-        },
-        deliveryFee: { $first: "$deliveryFee" },
-        total: { $first: "$total" },
-      },
-    },
-  ];
-  const buyingTransactions = await BuyingTransaction.aggregate(pipeline).exec();
+  const buyingTransactions = await BuyingTransaction.find({});
 
   res.status(200).json(buyingTransactions);
 };
@@ -98,8 +32,7 @@ const createSellingTransaction = async (req, res) => {
 
     async function calculateTotal() {
       for await (const item of items.map(async (item) => {
-        console.log("HERE", item);
-        const part = await Part.findById(item.part);
+        const part = await Part.findOne({ name: item.part });
 
         await Part.findOneAndUpdate(
           { _id: part._id },
@@ -141,13 +74,16 @@ const createBuyingTransaction = async (req, res) => {
 
     async function calculateTotal() {
       for await (const item of items.map(async (item) => {
-        const part = await Part.findById(item.part);
+        const part = await Part.findOne({ name: item.part });
 
         await Part.findOneAndUpdate(
-          { _id: part._id },
+          { _id: part?._id ?? new mongoose.Types.ObjectId() },
           {
+            $set: { name: item.part },
             $inc: { quantity: item.quantity },
-          }
+            $push: { supplier: item.supplier },
+          },
+          { upsert: true }
         );
 
         return item.quantity * item.price;

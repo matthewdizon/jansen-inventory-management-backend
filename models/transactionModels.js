@@ -5,10 +5,7 @@ const sellingTransactionSchema = new mongoose.Schema({
   date: { type: Date },
   items: [
     {
-      part: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Part",
-      },
+      part: String,
       quantity: Number,
       price: Number,
     },
@@ -29,10 +26,7 @@ const buyingTransactionSchema = new mongoose.Schema({
   date: { type: Date },
   items: [
     {
-      part: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Part",
-      },
+      part: String,
       quantity: Number,
       price: Number,
     },

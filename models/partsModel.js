@@ -3,10 +3,10 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const partSchema = new Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true, unique: true, dropDups: true },
   quantity: { type: Number, required: false },
   supplier: {
-    type: String,
+    type: [String],
     required: false,
   },
 });
