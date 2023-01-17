@@ -8,6 +8,7 @@ const {
   getBuyingTransaction,
   deleteSellingTransaction,
   deleteBuyingTransaction,
+  addNewPaymentToSellingTransaction,
 } = require("../controllers/transactionControllers");
 const authenticateToken = require("../middleware/authenticateToken");
 
@@ -18,6 +19,7 @@ router.get("/selling", authenticateToken, getSellingTransactions);
 router.post("/selling", authenticateToken, createSellingTransaction);
 router.get("/selling/:id", getSellingTransaction);
 router.delete("/selling/:id", deleteSellingTransaction);
+router.patch("/selling/:id", addNewPaymentToSellingTransaction);
 
 // Buying
 router.get("/buying", authenticateToken, getBuyingTransactions);

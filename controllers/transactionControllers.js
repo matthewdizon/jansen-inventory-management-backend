@@ -152,6 +152,24 @@ const deleteBuyingTransaction = async (req, res) => {
   res.status(200).json(buyingTransaction);
 };
 
+const addNewPaymentToSellingTransaction = async (req, res) => {
+  const { id } = req.params;
+  const { amount, method, date } = req.body;
+
+  try {
+    const sellingTransaction = await SellingTransaction.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      { $push: { payments: { amount: amount, method: method, date: date } } }
+    );
+    res.status(200).json(sellingTransaction);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getSellingTransactions,
   getBuyingTransactions,
@@ -161,4 +179,5 @@ module.exports = {
   getBuyingTransaction,
   deleteSellingTransaction,
   deleteBuyingTransaction,
+  addNewPaymentToSellingTransaction,
 };
