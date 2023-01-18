@@ -20,6 +20,7 @@ const sellingTransactionSchema = new mongoose.Schema({
   ],
   charge: Number,
   total: Number,
+  user: String,
 });
 
 const buyingTransactionSchema = new mongoose.Schema({
@@ -33,6 +34,7 @@ const buyingTransactionSchema = new mongoose.Schema({
   ],
   deliveryFee: Number,
   total: Number,
+  user: String,
 });
 
 const BuyingTransaction = mongoose.model(

@@ -21,7 +21,8 @@ const getBuyingTransactions = async (req, res) => {
 
 const createSellingTransaction = async (req, res) => {
   // subtract quantity of selected part
-  const { customer, date, items, initialPayment, collectionDate } = req.body;
+  const { customer, date, items, initialPayment, collectionDate, user } =
+    req.body;
 
   let payments = [];
 
@@ -56,6 +57,7 @@ const createSellingTransaction = async (req, res) => {
       payments,
       collectionDate,
       total,
+      user,
     });
 
     res.status(200).json(sellingTransaction);
@@ -67,7 +69,7 @@ const createSellingTransaction = async (req, res) => {
 
 const createBuyingTransaction = async (req, res) => {
   // add quantity of selected part
-  const { date, items, deliveryFee } = req.body;
+  const { date, items, deliveryFee, user } = req.body;
 
   try {
     let total = 0;
@@ -99,6 +101,7 @@ const createBuyingTransaction = async (req, res) => {
       items,
       deliveryFee,
       total,
+      user,
     });
 
     res.status(200).json(buyingTransaction);
