@@ -9,6 +9,7 @@ const partSchema = new Schema({
     type: [String],
     required: false,
   },
+  quantityThreshold: { type: Number, default: 1 },
 });
 
 const Part = mongoose.model("part", partSchema);

@@ -79,8 +79,24 @@ const getUpcomingAndOverduePayments = async (req, res) => {
   }
 };
 
+const getLowQuantityParts = async (req, res) => {
+  try {
+    // Get the low-quantity parts
+    const parts = await Part.find({
+      $expr: {
+        $lte: ["$quantity", "$quantityThreshold"],
+      },
+    });
+    // Return the parts
+    res.json({ parts });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getNumberOfProducts,
   getTransactionsMonthlyTotal,
   getUpcomingAndOverduePayments,
+  getLowQuantityParts,
 };

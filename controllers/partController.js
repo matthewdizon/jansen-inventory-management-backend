@@ -19,7 +19,7 @@ const getPart = async (req, res) => {
 };
 
 const createPart = async (req, res) => {
-  const { name, quantity, supplier } = req.body;
+  const { name, quantity, supplier, quantityThreshold } = req.body;
 
   if (!name) {
     return res.status(422).send({ error: "Name must be provided" });
@@ -30,6 +30,7 @@ const createPart = async (req, res) => {
       name,
       quantity,
       supplier,
+      quantityThreshold,
     });
     res.status(200).json(part);
   } catch (error) {
