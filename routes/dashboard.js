@@ -4,6 +4,7 @@ const {
   getTransactionsMonthlyTotal,
   getUpcomingAndOverduePayments,
   getLowQuantityParts,
+  getProfitPerMonth,
 } = require("../controllers/dashboardController");
 const authenticateToken = require("../middleware/authenticateToken");
 
@@ -22,5 +23,7 @@ router.get(
 );
 
 router.get("/lowQuantityParts", authenticateToken, getLowQuantityParts);
+
+router.get("/getProfitPerMonth", authenticateToken, getProfitPerMonth);
 
 module.exports = router;

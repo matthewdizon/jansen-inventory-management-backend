@@ -94,9 +94,75 @@ const getLowQuantityParts = async (req, res) => {
   }
 };
 
+const getProfitPerMonth = async (req, res) => {
+  try {
+    // Get the current year
+    const currentYear = new Date().getFullYear();
+
+    // Get the transactions for the current year
+    const sellingTransactions = await SellingTransaction.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: new Date(currentYear, 0, 1),
+            $lt: new Date(currentYear + 1, 0, 1),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$date" },
+          totalProfit: { $sum: "$total" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Create an array to store the profit of each month
+    let profitPerMonth = Array(12).fill(0);
+    sellingTransactions.forEach((transaction) => {
+      profitPerMonth[transaction._id - 1] = transaction.totalProfit;
+    });
+
+    // Get the transactions for the current month
+    const buyingTransactions = await BuyingTransaction.aggregate([
+      {
+        $match: {
+          date: {
+            $gte: new Date(currentYear, 0, 1),
+            $lt: new Date(currentYear + 1, 0, 1),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $month: "$date" },
+          totalExpenses: { $sum: "$total" },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    // Create an array to store the profit of each month
+    let expensesPerMonth = Array(12).fill(0);
+    buyingTransactions.forEach((transaction) => {
+      expensesPerMonth[transaction._id - 1] = transaction.totalExpenses;
+    });
+
+    res.json({ profitPerMonth, expensesPerMonth });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getNumberOfProducts,
   getTransactionsMonthlyTotal,
   getUpcomingAndOverduePayments,
   getLowQuantityParts,
+  getProfitPerMonth,
 };
