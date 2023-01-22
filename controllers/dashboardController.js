@@ -70,7 +70,7 @@ const getUpcomingAndOverduePayments = async (req, res) => {
           },
         },
       ],
-    });
+    }).sort({ collectionDate: 1 });
 
     // Return the payments
     res.json({ payments });
