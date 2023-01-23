@@ -31,7 +31,7 @@ const getTransactionsMonthlyTotal = async (req, res) => {
     // Sum the profit of the transactions
     let totalProfit = 0;
     sellingTransactions.forEach((transaction) => {
-      totalProfit += transaction.total;
+      totalProfit += transaction.totalPayments;
     });
 
     // Get the transactions for the current month
@@ -72,8 +72,11 @@ const getUpcomingAndOverduePayments = async (req, res) => {
       ],
     }).sort({ collectionDate: 1 });
 
+    // Filter the payments that have charges greater than 0
+    const paymentsWithCharge = payments.filter((payment) => payment.charge > 0);
+
     // Return the payments
-    res.json({ payments });
+    res.json({ paymentsWithCharge });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -112,7 +115,11 @@ const getProfitPerMonth = async (req, res) => {
       {
         $group: {
           _id: { $month: "$date" },
-          totalProfit: { $sum: "$total" },
+          totalPayments: {
+            $sum: {
+              $sum: "$payments.amount",
+            },
+          },
         },
       },
       {
@@ -123,7 +130,7 @@ const getProfitPerMonth = async (req, res) => {
     // Create an array to store the profit of each month
     let profitPerMonth = Array(12).fill(0);
     sellingTransactions.forEach((transaction) => {
-      profitPerMonth[transaction._id - 1] = transaction.totalProfit;
+      profitPerMonth[transaction._id - 1] = transaction.totalPayments;
     });
 
     // Get the transactions for the current month
