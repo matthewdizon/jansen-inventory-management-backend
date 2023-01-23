@@ -33,10 +33,8 @@ const createSellingTransaction = async (req, res) => {
 
     async function calculateTotal() {
       for await (const item of items.map(async (item) => {
-        const part = await Part.findOne({ name: item.part });
-
         await Part.findOneAndUpdate(
-          { _id: part._id },
+          { _id: item.part },
           {
             $inc: { quantity: -item.quantity },
           }
@@ -58,6 +56,15 @@ const createSellingTransaction = async (req, res) => {
       collectionDate,
       total,
       user,
+    });
+
+    items.map(async (item) => {
+      await Part.findOneAndUpdate(
+        { _id: item.part },
+        { $push: { sellingTransactions: sellingTransaction._id } }
+      );
+
+      return item.quantity * item.price;
     });
 
     res.status(200).json(sellingTransaction);
@@ -83,7 +90,7 @@ const createBuyingTransaction = async (req, res) => {
           {
             $set: { name: item.part },
             $inc: { quantity: item.quantity },
-            $push: { supplier: item.supplier },
+            $set: { supplier: item.supplier },
           },
           { upsert: true }
         );
@@ -114,7 +121,12 @@ const createBuyingTransaction = async (req, res) => {
 const getSellingTransaction = async (req, res) => {
   const { id } = req.params;
 
-  const sellingTransaction = await SellingTransaction.findById(id);
+  // const sellingTransaction = await SellingTransaction.findById(id);
+
+  const sellingTransaction = await SellingTransaction.findById(id).populate({
+    path: "items.part",
+    model: Part,
+  });
 
   if (!sellingTransaction) {
     return res.status(404).json({ error: "No such selling transaction" });

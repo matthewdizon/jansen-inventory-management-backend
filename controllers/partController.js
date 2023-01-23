@@ -1,4 +1,8 @@
 const Part = require("../models/partsModel");
+const {
+  BuyingTransaction,
+  SellingTransaction,
+} = require("../models/transactionModels");
 
 const getParts = async (req, res) => {
   const parts = await Part.find({});
@@ -9,7 +13,10 @@ const getParts = async (req, res) => {
 const getPart = async (req, res) => {
   const { id } = req.params;
 
-  const part = await Part.findById(id);
+  const part = await Part.findById(id).populate([
+    { path: "sellingTransactions", model: SellingTransaction },
+    { path: "buyingTransactions", model: BuyingTransaction },
+  ]);
 
   if (!part) {
     return res.status(404).json({ error: "No such part" });
