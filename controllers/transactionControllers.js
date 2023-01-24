@@ -121,12 +121,12 @@ const createBuyingTransaction = async (req, res) => {
 const getSellingTransaction = async (req, res) => {
   const { id } = req.params;
 
-  // const sellingTransaction = await SellingTransaction.findById(id);
+  const sellingTransaction = await SellingTransaction.findById(id);
 
-  const sellingTransaction = await SellingTransaction.findById(id).populate({
-    path: "items.part",
-    model: Part,
-  });
+  // const sellingTransaction = await SellingTransaction.findById(id).populate({
+  //   path: "items.part",
+  //   model: Part,
+  // });
 
   if (!sellingTransaction) {
     return res.status(404).json({ error: "No such selling transaction" });
