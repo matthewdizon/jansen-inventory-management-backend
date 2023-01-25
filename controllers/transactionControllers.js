@@ -85,11 +85,12 @@ const createBuyingTransaction = async (req, res) => {
       for await (const item of items.map(async (item) => {
         if (item.isNew) {
           const { part: name, quantity, supplier } = item;
-          await Part.create({
+          createdPart = await Part.create({
             name,
             quantity,
             supplier,
           });
+          item.part = createdPart._id;
         } else {
           await Part.findOneAndUpdate(
             { _id: item.part },
@@ -113,6 +114,15 @@ const createBuyingTransaction = async (req, res) => {
       deliveryFee,
       total,
       user,
+    });
+
+    items.map(async (item) => {
+      await Part.findOneAndUpdate(
+        { _id: item.part },
+        { $push: { buyingTransactions: buyingTransaction._id } }
+      );
+
+      return item.quantity * item.price;
     });
 
     res.status(200).json(buyingTransaction);
@@ -140,7 +150,10 @@ const getSellingTransaction = async (req, res) => {
 const getBuyingTransaction = async (req, res) => {
   const { id } = req.params;
 
-  const buyingTransaction = await BuyingTransaction.findById(id);
+  const buyingTransaction = await BuyingTransaction.findById(id).populate({
+    path: "items.part",
+    model: Part,
+  });
 
   if (!buyingTransaction) {
     return res.status(404).json({ error: "No such buying transaction" });
