@@ -83,17 +83,21 @@ const createBuyingTransaction = async (req, res) => {
 
     async function calculateTotal() {
       for await (const item of items.map(async (item) => {
-        const part = await Part.findOne({ name: item.part });
-
-        await Part.findOneAndUpdate(
-          { _id: part?._id ?? new mongoose.Types.ObjectId() },
-          {
-            $set: { name: item.part },
-            $inc: { quantity: item.quantity },
-            $set: { supplier: item.supplier },
-          },
-          { upsert: true }
-        );
+        if (item.isNew) {
+          const { part: name, quantity, supplier } = item;
+          await Part.create({
+            name,
+            quantity,
+            supplier,
+          });
+        } else {
+          await Part.findOneAndUpdate(
+            { _id: item.part },
+            {
+              $inc: { quantity: item.quantity },
+            }
+          );
+        }
 
         return item.quantity * item.price;
       })) {
@@ -121,12 +125,10 @@ const createBuyingTransaction = async (req, res) => {
 const getSellingTransaction = async (req, res) => {
   const { id } = req.params;
 
-  const sellingTransaction = await SellingTransaction.findById(id);
-
-  // const sellingTransaction = await SellingTransaction.findById(id).populate({
-  //   path: "items.part",
-  //   model: Part,
-  // });
+  const sellingTransaction = await SellingTransaction.findById(id).populate({
+    path: "items.part",
+    model: Part,
+  });
 
   if (!sellingTransaction) {
     return res.status(404).json({ error: "No such selling transaction" });
