@@ -54,9 +54,24 @@ const deletePart = async (req, res) => {
   res.status(200).json(part);
 };
 
+const updatePart = async (req, res) => {
+  const { slug } = req.body;
+  console.log(slug);
+
+  const part = await Part.findOneAndUpdate(
+    { _id: slug },
+    {
+      ...req.body,
+    }
+  );
+
+  return res.status(200).json(part);
+};
+
 module.exports = {
   getParts,
   getPart,
   createPart,
   deletePart,
+  updatePart,
 };
