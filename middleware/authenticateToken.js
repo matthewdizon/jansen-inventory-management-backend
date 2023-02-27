@@ -1,26 +1,19 @@
-const jwt = require("jsonwebtoken");
+const jose = require("jose");
 
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
+  const secret = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET);
 
   if (token == null) return res.sendStatus(401);
 
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.userData = decoded;
+    const { payload } = await jose.jwtVerify(token, secret);
+    req.userData = payload;
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      console.error("Invalid JWT"); // The JWT is invalid
-      return res.sendStatus(401);
-    } else if (error instanceof jwt.TokenExpiredError) {
-      console.error("JWT has expired"); // The JWT has expired
-      return res.sendStatus(401);
-    } else {
-      console.error(error); // An unknown error occurred
-      return res.sendStatus(401);
-    }
+    console.error(error); // An unknown error occurred
+    return res.sendStatus(401);
   }
 };
 

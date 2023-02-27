@@ -1,6 +1,6 @@
 const User = require("../models/usersModel");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const jose = require("jose");
 
 const createUser = async (req, res) => {
   const { email, password } = req.body;
@@ -36,6 +36,8 @@ const createUser = async (req, res) => {
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
+  const alg = "HS256";
+  const secret = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET);
   const payload = {
     user: user?.email, // The user's email
   };
@@ -43,9 +45,10 @@ const loginUser = async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (validPassword) {
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "3d",
-      });
+      const accessToken = await new jose.SignJWT(payload)
+        .setProtectedHeader({ alg })
+        .setExpirationTime("3d")
+        .sign(secret);
       res.json({ accessToken: accessToken });
     } else {
       res.status(400).json({ error: "Invalid Password" });
@@ -59,21 +62,17 @@ const identifyUser = async (req, res) => {
   // Get the access token from the request header
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
+  const secret = new TextEncoder().encode(process.env.ACCESS_TOKEN_SECRET);
 
   // Verify the access token using the secret that was used to sign it
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-    if (err) {
-      // If the token is invalid or has been tampered with, return an error
-      res.status(401).send({ error: "Invalid token" });
-      return;
-    }
-
-    // Extract the user's email address from the decoded payload
-    const email = decoded.user;
-
-    // Send the email address to the frontend
+  try {
+    const { payload } = await jose.jwtVerify(token, secret);
+    const email = payload.user;
     res.send({ email: email });
-  });
+  } catch (error) {
+    console.error(error); // An unknown error occurred
+    res.status(401).send({ error: "Invalid token" });
+  }
 };
 
 module.exports = {
